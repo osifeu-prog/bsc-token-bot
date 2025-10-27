@@ -1,3 +1,4 @@
+# מינימום ABI לחיבור לקריאה ושליחה (ERC20-like)
 token_abi = [
     {
         "constant": True,
@@ -14,6 +15,13 @@ token_abi = [
         ],
         "name": "transfer",
         "outputs": [{"name": "success", "type": "bool"}],
+        "type": "function"
+    },
+    {
+        "constant": True,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [{"name": "", "type": "uint8"}],
         "type": "function"
     }
 ]
