@@ -1,5 +1,5 @@
 const { web3, account } = require('./wallet');
-const tokenABI = [ // חלק מה-ABI של ERC-20
+const tokenABI = [
   { "constant": false, "inputs": [{ "name": "_to", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "", "type": "bool" }], "type": "function" }
 ];
 const tokenAddress = process.env.TOKEN_CONTRACT_ADDRESS;
