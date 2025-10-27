@@ -3,7 +3,7 @@ from config import OPENAI_API_KEY
 
 openai.api_key = OPENAI_API_KEY
 
-async def ask_ai(prompt):
+def ask_ai(prompt: str):
     try:
         resp = openai.ChatCompletion.create(
             model="gpt-4",
@@ -12,4 +12,4 @@ async def ask_ai(prompt):
         )
         return resp.choices[0].message.content.strip()
     except Exception as e:
-        return f"שגיאה ב־AI: {str(e)}"
+        return f"AI error: {str(e)}"
