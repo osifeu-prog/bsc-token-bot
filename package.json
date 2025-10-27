@@ -1,7 +1,7 @@
 {
-  "name": "bsc-token-bot",
+  "name": "bsc-smart-bot",
   "version": "1.0.0",
-  "description": "Telegram bot for distributing BSC token",
+  "description": "Telegram bot for BSC token distribution and smart contracts",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -9,6 +9,7 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "node-telegram-bot-api": "^0.61.0",
-    "web3": "^4.0.3"
+    "web3": "^4.0.3",
+    "axios": "^1.6.0"
   }
 }
