@@ -1,0 +1,18 @@
+require('dotenv').config();
+const TelegramBot = require('node-telegram-bot-api');
+const { sendToken } = require('./distribute');
+
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+
+bot.onText(/\/send (.+) (.+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const toAddress = match[1];
+  const amount = match[2];
+
+  try {
+    const receipt = await sendToken(toAddress, amount);
+    bot.sendMessage(chatId, `✅ נשלח ${amount} טוקנים לכתובת ${toAddress}\nHash: ${receipt.transactionHash}`);
+  } catch (err) {
+    bot.sendMessage(chatId, `❌ שגיאה בשליחה: ${err.message}`);
+  }
+});
