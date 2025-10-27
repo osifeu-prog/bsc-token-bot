@@ -1,18 +1,49 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const { sendToken } = require('./distribute');
+const { saveUser, getUsers } = require('./users');
+const { saveContract } = require('./contracts');
+const { logDistribution } = require('./history');
+const { askOpenAI, askHuggingFace } = require('./ai');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
-bot.onText(/\/send (.+) (.+)/, async (msg, match) => {
-  const chatId = msg.chat.id;
-  const toAddress = match[1];
-  const amount = match[2];
+bot.onText(/\/wallet (.+)/, (msg, match) => {
+  saveUser(msg.chat.id, match[1]);
+  bot.sendMessage(msg.chat.id, `✅ כתובת הארנק שלך נשמרה`);
+});
 
-  try {
-    const receipt = await sendToken(toAddress, amount);
-    bot.sendMessage(chatId, `✅ נשלח ${amount} טוקנים לכתובת ${toAddress}\nHash: ${receipt.transactionHash}`);
-  } catch (err) {
-    bot.sendMessage(chatId, `❌ שגיאה בשליחה: ${err.message}`);
+bot.onText(/\/contract (.+)/, (msg, match) => {
+  saveContract(msg.chat.id, match[1]);
+  bot.sendMessage(msg.chat.id, `✅ כתובת החוזה שלך נשמרה`);
+});
+
+bot.onText(/\/distribute (\d+)/, async (msg, match) => {
+  const amount = match[1];
+  const users = getUsers();
+
+  for (const userId in users) {
+    const wallet = users[userId];
+    try {
+      const receipt = await sendToken(wallet, amount);
+      logDistribution(wallet, amount, receipt.transactionHash);
+      bot.sendMessage(userId, `🎉 קיבלת ${amount} טוקנים`);
+    } catch (err) {
+      bot.sendMessage(userId, `❌ שגיאה: ${err.message}`);
+    }
   }
+
+  bot.sendMessage(msg.chat.id, `✅ חלוקה הושלמה`);
+});
+
+bot.onText(/\/askai (.+)/, async (msg, match) => {
+  const prompt = match[1];
+  const reply = await askOpenAI(prompt);
+  bot.sendMessage(msg.chat.id, reply);
+});
+
+bot.onText(/\/huggingface (.+)/, async (msg, match) => {
+  const prompt = match[1];
+  const reply = await askHuggingFace(prompt);
+  bot.sendMessage(msg.chat.id, reply);
 });
