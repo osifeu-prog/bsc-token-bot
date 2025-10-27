@@ -8,26 +8,34 @@ if not web3.isConnected():
 
 contract = web3.eth.contract(address=Web3.to_checksum_address(TOKEN_CONTRACT_ADDRESS), abi=token_abi)
 
-def format_balance(raw):
-    try:
-        return int(raw)
-    except:
-        return raw
+def to_wei(amount, decimals=18):
+    return int(amount * (10 ** decimals))
 
-async def get_balance(address):
+def from_wei(amount, decimals=18):
+    return amount / (10 ** decimals)
+
+def get_token_decimals():
+    try:
+        return contract.functions.decimals().call()
+    except:
+        return 18
+
+def get_balance(address):
     try:
         address = Web3.to_checksum_address(address)
-        balance = contract.functions.balanceOf(address).call()
-        return format_balance(balance)
+        raw = contract.functions.balanceOf(address).call()
+        decimals = get_token_decimals()
+        return from_wei(raw, decimals)
     except Exception as e:
-        return f"שגיאה: {str(e)}"
+        return {"error": str(e)}
 
-async def send_tokens(to, amount):
+def send_tokens(to, amount):  # amount in human units (e.g., 1.5 SLH)
     try:
         to = Web3.to_checksum_address(to)
-        # amount expected as integer smallest unit matching token decimals
+        decimals = get_token_decimals()
+        value = to_wei(float(amount), decimals)
         nonce = web3.eth.get_transaction_count(Web3.to_checksum_address(OWNER_WALLET_ADDRESS))
-        tx = contract.functions.transfer(to, int(amount)).build_transaction({
+        tx = contract.functions.transfer(to, value).build_transaction({
             'chainId': CHAIN_ID,
             'gas': 200000,
             'gasPrice': web3.to_wei('5', 'gwei'),
@@ -37,4 +45,4 @@ async def send_tokens(to, amount):
         tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
         return web3.to_hex(tx_hash)
     except Exception as e:
-        return f"שגיאה: {str(e)}"
+        return {"error": str(e)}
